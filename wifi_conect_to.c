@@ -1,10 +1,6 @@
-/*
- * wifi_conect_to.c
- *
- *  Created on: 20 бер. 2018 р.
- *      Author: Mykhailo
- */
-
+/*----------------------------------------------------------------------
+                                Include
+*----------------------------------------------------------------------*/
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -22,10 +18,9 @@
 
 #include "wifi_conect_to.h"
 
-/*Set the SSID and Password via "make menuconfig"*/
-//#define DEFAULT_SSID "PC_iPhone_SE"
-//#define DEFAULT_PWD "mykhailomorhal1991"
-
+/*----------------------------------------------------------------------
+                                Defines
+*----------------------------------------------------------------------*/
 #define DEFAULT_SSID "Alitec_2G"
 #define DEFAULT_PWD "$schodydonieba300"
 
@@ -63,13 +58,14 @@
 #define DEFAULT_AUTHMODE WIFI_AUTH_OPEN
 #endif /*CONFIG_FAST_SCAN_THRESHOLD*/
 
+/*----------------------------------------------------------------------
+                    		Staric val & Extern val
+*----------------------------------------------------------------------*/
 static const char *TAG = "scan";
-
 EventGroupHandle_t tcp_event_group;
 
 
 static esp_err_t event_handler(void *ctx, system_event_t *event)
-
 {
     switch(event->event_id) {
     case SYSTEM_EVENT_STA_START:
@@ -84,20 +80,17 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     case SYSTEM_EVENT_STA_GOT_IP:
     	ESP_LOGI(TAG, "got ip:%s\n",
 		ip4addr_ntoa(&event->event_info.got_ip.ip_info.ip));
-    	//xEventGroupSetBits(tcp_event_group, WIFI_CONNECTED_BIT);
         break;
     case SYSTEM_EVENT_AP_STACONNECTED:
     	printf("AP_STACONNECTED\n");
     	ESP_LOGI(TAG, "station:"MACSTR" join,AID=%d\n",
 		MAC2STR(event->event_info.sta_connected.mac),
 		event->event_info.sta_connected.aid);
-    	//xEventGroupSetBits(tcp_event_group, WIFI_CONNECTED_BIT);
     	break;
     case SYSTEM_EVENT_AP_STADISCONNECTED:
     	ESP_LOGI(TAG, "station:"MACSTR"leave,AID=%d\n",
 		MAC2STR(event->event_info.sta_disconnected.mac),
 		event->event_info.sta_disconnected.aid);
-    	//xEventGroupClearBits(tcp_event_group, WIFI_CONNECTED_BIT);
     	break;
     default:
         break;
@@ -105,14 +98,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     return ESP_OK;
 }
 
-/* Initialize Wi-Fi as sta and set scan method */
-
-//Коли ESP є станцією (sta) то він може підключатись к удаленному доступу,
-//а коли як точка доступу (access point) то другі танції WIFI можут підключатись до нього
-
-
-
-void wifi_init_sta()// Stations Mode
+void wifi_init_sta()
 {
     tcp_event_group = xEventGroupCreate();
 
@@ -121,7 +107,7 @@ void wifi_init_sta()// Stations Mode
 
 
     wifi_init_config_t sta_cfg = WIFI_INIT_CONFIG_DEFAULT();
-    //wifi_sta_config_t sta_cfg = WIFI_INIT_CONFIG_DEFAULT();
+
     ESP_ERROR_CHECK(esp_wifi_init(&sta_cfg));
     wifi_config_t wifi_config = {
         .sta = {
@@ -139,15 +125,13 @@ void wifi_init_sta()// Stations Mode
 	    DEFAULT_SSID,DEFAULT_PWD);
 }
 
-void wifi_init_softap()//Access Point mode
+void wifi_init_softap()
 {
     tcp_event_group = xEventGroupCreate();
 
     tcpip_adapter_init();
     ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
-
-    //wifi_ap_config_t  ap_cfg = WIFI_INIT_CONFIG_DEFAULT();
     wifi_init_config_t ap_cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&ap_cfg));
     wifi_config_t wifi_config = {
